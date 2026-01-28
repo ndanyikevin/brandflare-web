@@ -1,57 +1,16 @@
 import { createSignal, For } from "solid-js";
+import { A } from "@solidjs/router";
 import { 
   MapPin, ArrowUpRight, Filter, 
   Maximize2
 } from "lucide-solid";
 import { Button } from "~/components/ui/button";
+import { PROJECTS as projects } from "~/constants/projects";
 
 export default function GalleryPage() {
   const [filter, setFilter] = createSignal("All");
 
-  const projects = [
-    { 
-      id: 1, 
-      title: "Contemporary Shell & Core", 
-      location: "Karen, Nairobi", 
-      category: "Construction",
-      img: "https://images.unsplash.com/photo-1590373930843-0597d3969185?auto=format&fit=crop&q=80&w=800" 
-    },
-    { 
-      id: 2, 
-      title: "Tray Ceiling with LED Coves", 
-      location: "Runda", 
-      category: "Gypsum",
-      img: "https://images.unsplash.com/photo-1615873968403-89e068629275?auto=format&fit=crop&q=80&w=800" 
-    },
-    { 
-      id: 3, 
-      title: "Executive Office Fit-out", 
-      location: "Upper Hill", 
-      category: "Finishing",
-      img: "https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80&w=800" 
-    },
-    { 
-      id: 4, 
-      title: "Modern 4-Bedroom Villa", 
-      location: "Kiambu Road", 
-      category: "Construction",
-      img: "https://images.unsplash.com/photo-1600585154340-be6191dae10c?auto=format&fit=crop&q=80&w=800" 
-    },
-    { 
-      id: 5, 
-      title: "Bulkhead Gypsum Design", 
-      location: "Westlands", 
-      category: "Gypsum",
-      img: "https://images.unsplash.com/photo-1620626011761-9963d7521476?auto=format&fit=crop&q=80&w=800" 
-    },
-    { 
-      id: 6, 
-      title: "Bespoke Wardrobe Installation", 
-      location: "Kilimani", 
-      category: "Finishing",
-      img: "https://images.unsplash.com/photo-1595428774223-ef52624120d2?auto=format&fit=crop&q=80&w=800" 
-    }
-  ];
+  
 
   const categories = ["All", "Construction", "Gypsum", "Finishing"];
 
@@ -110,7 +69,7 @@ export default function GalleryPage() {
                     src={project.img} 
                     alt={project.title}
                     loading="lazy"
-                    class="w-full grayscale group-hover:grayscale-0 group-hover:scale-105 transition-all duration-700 ease-in-out"
+                    class="w-full group-hover:grayscale-0 group-hover:scale-105 transition-all duration-700 ease-in-out"
                   />
                   {/* Overlay on Hover */}
                   <div class="absolute inset-0 bg-slate-900/0 group-hover:bg-slate-900/60 transition-all duration-500 flex items-center justify-center">
@@ -154,7 +113,10 @@ export default function GalleryPage() {
             Your Project <br/> <span class="text-amber-500 text-6xl md:text-8xl">Starts Here.</span>
           </h2>
           <Button class="bg-white text-slate-950 font-black px-12 py-8 rounded-none hover:bg-amber-500 transition-colors uppercase text-xs tracking-[0.2em]">
-            Inquire About Your Project
+            <A href="/contact#contact-grid">
+              Inquire About Your Project
+            </A>
+            
           </Button>
         </div>
       </section>

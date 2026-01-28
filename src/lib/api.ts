@@ -1,37 +1,32 @@
 // src/lib/api.ts
-import { hc } from "hono/client";
-import type { AppType } from "../../../server/src/routes";
 
 export const API_BASE_URL = "http://localhost:5000/api";
 
 /**
- * 1. RPC Client Refactor
- * We inject a custom fetch into the Hono Client to ensure 
- * it always includes credentials (cookies).
- */
-export const api = hc<AppType>(API_BASE_URL, {
-  fetch: (url: string | Request | URL, options: RequestInit | undefined) => {
-    return fetch(url, {
-      ...options,
-      credentials: "include", // THIS IS THE KEY FIX
-    });
-  },
-});
-
-/**
- * 2. Manual Fetch Refactor
- * Added credentials: "include" to ensure cookies flow here too.
+ * 1. Standard API Fetcher
+ * Use this for all GET, POST, DELETE requests.
+ * It handles credentials (cookies) and JSON parsing automatically.
  */
 export async function apiFetch<T>(endpoint: string, options?: RequestInit): Promise<T> {
+  // Ensure endpoint starts with a slash
+  const url = endpoint.startsWith("http") 
+    ? endpoint 
+    : `${API_BASE_URL}${endpoint.startsWith("/") ? endpoint : `/${endpoint}`}`;
+
   try {
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+    const response = await fetch(url, {
       ...options,
-      credentials: "include", // THIS IS THE KEY FIX
+      credentials: "include", // Required for session cookies
       headers: {
         "Content-Type": "application/json",
         ...options?.headers,
       },
     });
+
+    // Handle 204 No Content (often used in logout or deletes)
+    if (response.status === 204) {
+      return {} as T;
+    }
 
     const contentType = response.headers.get("content-type");
 
@@ -45,11 +40,27 @@ export async function apiFetch<T>(endpoint: string, options?: RequestInit): Prom
       }
     }
 
-    return response.json();
+    return response.json() as Promise<T>;
   } catch (err: any) {
     if (err.message === "Failed to fetch") {
-      throw new Error("Cannot connect to server. Is Hono running on the right port?");
+      throw new Error("Cannot connect to server. Is the Hono backend running?");
     }
     throw err;
   }
 }
+
+/**
+ * 2. Convenience methods for common actions
+ */
+export const api = {
+  get: <T>(url: string) => apiFetch<T>(url, { method: "GET" }),
+  post: <T>(url: string, data: any) => apiFetch<T>(url, { 
+    method: "POST", 
+    body: JSON.stringify(data) 
+  }),
+  put: <T>(url: string, data: any) => apiFetch<T>(url, { 
+    method: "PUT", 
+    body: JSON.stringify(data) 
+  }),
+  delete: <T>(url: string) => apiFetch<T>(url, { method: "DELETE" }),
+};

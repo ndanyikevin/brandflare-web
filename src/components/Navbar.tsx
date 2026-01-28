@@ -1,87 +1,57 @@
-import { A, useNavigate } from "@solidjs/router";
-import { useColorMode } from "@kobalte/core";
-import { 
-  Sun, Moon, LayoutDashboard, FileText, 
-  Users, Settings, Menu, Logs, LogOut, LogIn 
+import { A, useNavigate, createAsync, revalidate } from "@solidjs/router";
+import {
+  LayoutDashboard, FileText, Users, Settings,
+  Menu, Logs, LogOut, LogIn
 } from "lucide-solid";
+import { createSignal, Show, For, Suspense, type Component } from "solid-js";
 import { Button } from "~/components/ui/button";
-import { 
-  Sheet, 
-  SheetContent, 
-  SheetTrigger, 
-  SheetHeader, 
-  SheetTitle 
+import {
+  Sheet,
+  SheetContent,
+  SheetTrigger,
+  SheetHeader,
+  SheetTitle
 } from "~/components/ui/sheet";
-import { createSignal, Show, For, createResource } from "solid-js";
+import { getUsers } from "~/lib/user";
 import { API_BASE_URL } from "~/lib/api";
 
-export default function Navbar() {
+const Navbar: Component = () => {
   const [isOpen, setIsOpen] = createSignal(false);
   const navigate = useNavigate();
 
-  // 1. Fetch User Session
-  const [user, { mutate }] = createResource(async () => {
-    try {
-      const res = await fetch(`${API_BASE_URL}/auth/me`, {
-        credentials: "include",
-      });
-      if (res.status === 401) return null;
-      if (!res.ok) return null;
-      const data = await res.json();
-      return data.user; 
-    } catch (err) {
-      return null;
-    }
-  });
 
-  // 2. Logout Handler
-  const handleLogout = async () => {
-    try {
-      await fetch(`${API_BASE_URL}/auth/logout`, { 
-        method: "POST", 
-        credentials: "include" 
-      });
-      mutate(null); 
-      setIsOpen(false);
-      navigate("/sign-in", { replace: true });
-    } catch (e) {
-      console.error("Logout failed", e);
-    }
-  };
-
-  // 3. Navigation Links
-  const navLinks = () => [
+  const navLinks = [
     { href: "/", label: "Home", icon: LayoutDashboard, public: true },
     { href: "/gallery", label: "Gallery", icon: FileText, public: true },
     { href: "/contact", label: "Contact", icon: Users, public: true },
-    { href: "/dashboard", label: "Dashboard", icon: Settings, public: false },
-  ].filter(link => link.public || !!user());
+  ];
+
+  // const visibleLinks = () => navLinks.filter(l => l.public || !!user());
 
   return (
-    <header class="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <header class="sticky top-0 z-50 w-full border-b bg-white/95 backdrop-blur-sm">
       <div class="container flex h-16 items-center justify-between px-4 mx-auto">
-        
-        {/* Logo Section - REFACTORED */}
+
         <A href="/" class="flex items-center gap-2">
-          {Logs({ class: "h-6 w-6 text-primary" })}
-          <span class="text-xl font-bold tracking-tight hidden md:inline-block">
-            Brandflare <span class="text-primary text-sm font-normal">Woodworks</span>
-          </span>
+          <img
+            src="/logos/black.png"
+            alt="Brandflare Logo"
+            class="h-12 w-120 object-contain"
+          />
         </A>
 
-        {/* Desktop Navigation */}
         <nav class="hidden md:flex items-center gap-6">
-          <For each={navLinks()}>
+          <For each={navLinks}>
             {(link) => (
-              <A 
-                href={link.href} 
-                activeClass="text-primary font-semibold"
-                inactiveClass="text-muted-foreground transition-colors hover:text-primary"
+              <A
+                href={link.href}
+                activeClass="text-slate-900 font-bold border-b-2 border-slate-900"
+                inactiveClass="text-slate-500 hover:text-slate-900 transition-colors"
                 end={link.href === "/"}
+                class="py-1 px-1"
               >
-                <div class="flex items-center gap-2 text-sm">
-                  {/* REFACTORED */}
-                  {link.icon({ size: 18 })}
+                <div class="flex items-center gap-2 text-[11px] font-black uppercase tracking-widest">
+                  <link.icon size={16} />
                   {link.label}
                 </div>
               </A>
@@ -89,88 +59,69 @@ export default function Navbar() {
           </For>
         </nav>
 
-        <div class="flex items-center gap-4">
-          <div class="flex items-center gap-2">
-            
-            {/* Desktop Auth Section */}
-            <Show when={!user.loading}>
-              <Show 
-                when={user()} 
-                fallback={
-                  <Button as={A} href="/sign-in" variant="default" size="sm" class="hidden md:flex gap-2">
-                    {LogIn({ size: 16 })} Sign In
+        {/* <div class="flex items-center gap-4">
+          <Suspense fallback={<div class="w-20 h-8 bg-slate-100 animate-pulse rounded-lg" />}>
+            <Show 
+              when={user()} 
+              fallback={
+                <A href="/sign-in" class="hidden md:block">
+                  <Button variant="outline" size="sm" class="font-bold uppercase tracking-tighter">
+                    Operator Login
                   </Button>
-                }
-              >
-                <div class="hidden md:flex items-center gap-3">
-                   <div class="flex flex-col items-end leading-none">
-                      <span class="text-xs font-bold capitalize">{user()?.username}</span>
-                      <span class="text-[10px] text-muted-foreground uppercase">{user()?.role}</span>
-                   </div>
-                   <Button onClick={handleLogout} variant="outline" size="sm" class="gap-2 text-red-500 hover:text-red-600">
-                    {LogOut({ size: 16 })} Log Out
-                  </Button>
+                </A>
+              }
+            >
+              <div class="hidden md:flex items-center gap-4">
+                <div class="text-right">
+                  <p class="text-[9px] font-black text-slate-400 uppercase leading-none">Identity</p>
+                  <p class="text-xs font-bold text-slate-900 leading-none mt-1">{user()?.username}</p>
                 </div>
-              </Show>
+                <Button onClick={handleLogout} variant="ghost" size="icon" class="text-red-500 hover:bg-red-50">
+                  <LogOut size={18} />
+                </Button>
+              </div>
             </Show>
+          </Suspense>
 
-            {/* Mobile Navigation */}
-            <div class="md:hidden">
-              <Sheet open={isOpen()} onOpenChange={setIsOpen}>
-                <SheetTrigger as={Button} variant="ghost" size="icon">
-                  {/* REFACTORED */}
-                  {Menu({ class: "h-6 w-6" })}
-                </SheetTrigger>
-                <SheetContent position="left">
-                  <SheetHeader>
-                    <SheetTitle class="text-left flex items-center gap-2">
-                      {Logs({ class: "h-5 w-5 text-primary" })}
-                      Brandflare
-                    </SheetTitle>
-                  </SheetHeader>
-                  <div class="grid gap-4 py-8">
-                    <For each={navLinks()}>
-                      {(link) => (
-                        <A 
-                          href={link.href} 
-                          onClick={() => setIsOpen(false)}
-                          class="flex items-center gap-4 text-lg font-medium text-muted-foreground hover:text-primary"
-                        >
-                          {link.icon({ size: 20 })}
-                          {link.label}
-                        </A>
-                      )}
-                    </For>
-                    
-                    <hr class="my-2 border-muted" />
-
-                    <Show when={!user.loading}>
-                      <Show 
-                        when={user()} 
-                        fallback={
-                          <Button as={A} href="/sign-in" onClick={() => setIsOpen(false)} class="w-full gap-2">
-                            {LogIn({ size: 18 })} Sign In
-                          </Button>
-                        }
+          <div class="md:hidden">
+            <Sheet open={isOpen()} onOpenChange={setIsOpen}>
+              <SheetTrigger>
+                <Button variant="ghost" size="icon"><Menu class="h-6 w-6" /></Button>
+              </SheetTrigger>
+              <SheetContent position="left" class="w-full sm:w-[350px] bg-white border-r p-6">
+                <SheetHeader class="mb-8">
+                  <SheetTitle class="flex items-center gap-2 text-left font-black tracking-tighter italic uppercase">
+                    <Logs class="h-5 w-5" /> Brandflare
+                  </SheetTitle>
+                </SheetHeader>
+                <div class="flex flex-col gap-2">
+                  <For each={visibleLinks()}>
+                    {(link) => (
+                      <A 
+                        href={link.href} 
+                        onClick={() => setIsOpen(false)} 
+                        class="flex items-center gap-4 p-4 rounded-xl text-sm font-bold uppercase tracking-widest border border-transparent active:bg-slate-50 hover:bg-slate-50"
                       >
-                        <div class="flex flex-col gap-4">
-                          <div class="px-2">
-                            <p class="text-sm font-semibold capitalize">{user()?.username}</p>
-                            <p class="text-xs text-muted-foreground uppercase">{user()?.role}</p>
-                          </div>
-                          <Button onClick={handleLogout} variant="destructive" class="w-full gap-2">
-                            {LogOut({ size: 18 })} Log Out
-                          </Button>
-                        </div>
-                      </Show>
-                    </Show>
-                  </div>
-                </SheetContent>
-              </Sheet>
-            </div>
+                        <link.icon size={20} /> {link.label}
+                      </A>
+                    )}
+                  </For>
+                  
+                  <Show when={user()}>
+                    <div class="mt-8 pt-8 border-t border-slate-100">
+                       <Button onClick={handleLogout} variant="destructive" class="w-full py-6 font-bold uppercase tracking-widest">
+                         Terminate Session
+                       </Button>
+                    </div>
+                  </Show>
+                </div>
+              </SheetContent>
+            </Sheet>
           </div>
-        </div>
+        </div> */}
       </div>
     </header>
   );
 }
+
+export default Navbar;

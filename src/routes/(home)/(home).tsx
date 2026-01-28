@@ -2,11 +2,16 @@ import { For, Show } from "solid-js";
 import { 
   Drill, Layers, 
   Instagram, Mail, Phone, CheckCircle2,
-  Construction
+  Construction, Loader2
 } from "lucide-solid";
 import { Button } from "~/components/ui/button";
+import { A, useAction, useSubmission } from "@solidjs/router";
+import { sendProjectBrief } from "~/lib/actions";
 
 export default function LandingPage() {
+  const submitAction = useAction(sendProjectBrief);
+  const submission = useSubmission(sendProjectBrief);
+
   const services = [
     { 
       title: "Housing & Construction", 
@@ -28,7 +33,7 @@ export default function LandingPage() {
   return (
     <div class="bg-white min-h-screen font-sans text-slate-900 scroll-smooth">
       
-      {/* 1. BOLD CENTERED HERO */}
+      {/* 1. HERO */}
       <section class="relative h-screen flex items-center justify-center overflow-hidden bg-slate-950">
         <div class="absolute inset-0 z-0">
           <img 
@@ -59,9 +64,11 @@ export default function LandingPage() {
             </p>
             
             <div class="flex flex-col md:flex-row items-center justify-center gap-4 pt-4">
-              <Button class="bg-amber-600 hover:bg-amber-500 text-white font-black px-12 py-8 rounded-none text-xs uppercase tracking-widest transition-all w-full md:w-auto">
-                Request a Quote
-              </Button>
+              <A href="#contact" class="w-full md:w-auto">
+                <Button class="bg-amber-600 hover:bg-amber-500 text-white font-black px-12 py-8 rounded-none text-xs uppercase tracking-widest transition-all w-full md:w-auto">
+                  Request a Quote
+                </Button>
+              </A>
               <Button variant="outline" class="text-white border-white/30 hover:bg-white hover:text-slate-950 px-12 py-8 rounded-none text-xs uppercase tracking-widest transition-all w-full md:w-auto">
                 View Projects
               </Button>
@@ -107,7 +114,7 @@ export default function LandingPage() {
           <For each={services}>{(item) => (
             <div class="space-y-8 group">
               <div class="w-16 h-16 bg-slate-900 text-amber-500 flex items-center justify-center transition-transform group-hover:-rotate-12 duration-300">
-                {item.icon({ size: 32 })}
+                <item.icon size={32} />
               </div>
               <div class="space-y-4">
                 <h3 class="text-2xl font-black uppercase tracking-tight">{item.title}</h3>
@@ -115,10 +122,10 @@ export default function LandingPage() {
               </div>
               <ul class="space-y-4 pt-4 border-t border-slate-100">
                 <li class="flex items-center gap-3 text-xs font-black uppercase text-slate-900">
-                  {CheckCircle2({ size: 16, class: "text-amber-600" })} Professional Grade
+                  <CheckCircle2 size={16} class="text-amber-600" /> Professional Grade
                 </li>
                 <li class="flex items-center gap-3 text-xs font-black uppercase text-slate-900">
-                  {CheckCircle2({ size: 16, class: "text-amber-600" })} Precision Execution
+                  <CheckCircle2 size={16} class="text-amber-600" /> Precision Execution
                 </li>
               </ul>
             </div>
@@ -127,7 +134,7 @@ export default function LandingPage() {
       </section>
 
       {/* 4. FOOTER / CONTACT */}
-      <footer class="bg-white pt-32 pb-12 border-t border-slate-100">
+      <footer id="contact" class="bg-white pt-32 pb-12 border-t border-slate-100">
         <div class="container mx-auto px-6">
           <div class="grid grid-cols-1 lg:grid-cols-2 gap-24 mb-32 items-start">
             <div class="space-y-12">
@@ -135,7 +142,7 @@ export default function LandingPage() {
                <div class="space-y-6">
                  <div class="flex items-center gap-6">
                     <div class="w-12 h-12 bg-slate-50 flex items-center justify-center border border-slate-200">
-                       {Phone({ size: 18 })}
+                       <Phone size={18} />
                     </div>
                     <div>
                       <p class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Contact Us</p>
@@ -144,7 +151,7 @@ export default function LandingPage() {
                  </div>
                  <div class="flex items-center gap-6">
                     <div class="w-12 h-12 bg-slate-50 flex items-center justify-center border border-slate-200">
-                       {Mail({ size: 18 })}
+                       <Mail size={18} />
                     </div>
                     <div>
                       <p class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Email Project Brief</p>
@@ -154,28 +161,62 @@ export default function LandingPage() {
               </div>
             </div>
             
-            <form class="space-y-6 bg-slate-950 p-12 shadow-2xl">
-              <h4 class="text-white font-black uppercase tracking-widest text-sm mb-4">Request Project Quotation</h4>
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <input placeholder="NAME" class="bg-slate-900 text-white px-6 py-4 outline-none border border-slate-800 focus:border-amber-500 transition-all font-black text-xs" />
-                <input placeholder="LOCATION" class="bg-slate-900 text-white px-6 py-4 outline-none border border-slate-800 focus:border-amber-500 transition-all font-black text-xs" />
-              </div>
-              <input placeholder="PHONE / EMAIL" class="w-full bg-slate-900 text-white px-6 py-4 outline-none border border-slate-800 focus:border-amber-500 transition-all font-black text-xs" />
-              <textarea placeholder="PROJECT DESCRIPTION" rows={4} class="w-full bg-slate-900 text-white px-6 py-4 outline-none border border-slate-800 focus:border-amber-500 transition-all font-black text-xs resize-none"></textarea>
-              <Button class="w-full bg-amber-500 py-8 font-black uppercase tracking-widest text-slate-950 hover:bg-white transition-all text-xs">
-                Submit for Review
-              </Button>
-            </form>
+            <div class="relative">
+              <Show when={submission.result?.success}>
+                <div class="absolute inset-0 bg-amber-500 z-20 flex flex-col items-center justify-center text-center p-12">
+                  <CheckCircle2 size={64} class="text-slate-950 mb-4" />
+                  <h3 class="text-2xl font-black uppercase text-slate-950">Brief Received</h3>
+                  <p class="text-slate-900 font-bold mt-2">We will contact you within 24 hours.</p>
+                  <Button 
+                    onClick={() => window.location.reload()} 
+                    class="mt-8 bg-slate-950 text-white rounded-none uppercase font-black text-xs px-8"
+                  >
+                    Send Another
+                  </Button>
+                </div>
+              </Show>
+
+              <form action={sendProjectBrief} method="post" class="space-y-6 bg-slate-950 p-12 shadow-2xl">
+                <h4 class="text-white font-black uppercase tracking-widest text-sm mb-4">Request Project Quotation</h4>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <input name="name" required placeholder="NAME" class="bg-slate-900 text-white px-6 py-4 outline-none border border-slate-800 focus:border-amber-500 transition-all font-black text-xs" />
+                  <input name="location" required placeholder="LOCATION (e.g. Kiamumbi)" class="bg-slate-900 text-white px-6 py-4 outline-none border border-slate-800 focus:border-amber-500 transition-all font-black text-xs" />
+                </div>
+                <input name="contact" required placeholder="PHONE / EMAIL" class="w-full bg-slate-900 text-white px-6 py-4 outline-none border border-slate-800 focus:border-amber-500 transition-all font-black text-xs" />
+                <textarea name="description" required placeholder="PROJECT DESCRIPTION (e.g. Gypsum and Joinery at Pinnacle Tower)" rows={4} class="w-full bg-slate-900 text-white px-6 py-4 outline-none border border-slate-800 focus:border-amber-500 transition-all font-black text-xs resize-none"></textarea>
+                
+                <Button 
+                  type="submit" 
+                  disabled={submission.pending}
+                  class="w-full bg-amber-500 py-8 font-black uppercase tracking-widest text-slate-950 hover:bg-white transition-all text-xs flex items-center justify-center gap-2"
+                >
+                  <Show when={submission.pending} fallback="Submit for Review">
+                    <Loader2 class="animate-spin" size={16} /> Processing...
+                  </Show>
+                </Button>
+                
+                <Show when={submission.result?.error}>
+                  <p class="text-red-500 text-[10px] font-black uppercase text-center mt-4">
+                    {submission.result?.error}
+                  </p>
+                </Show>
+              </form>
+            </div>
           </div>
           
           <div class="pt-12 border-t border-slate-100 flex flex-col md:flex-row justify-between items-center gap-6">
             <div class="flex items-center gap-2">
-               <div class="w-10 h-10 bg-slate-950 text-white flex items-center justify-center font-black">B</div>
-               <p class="text-slate-400 text-[10px] font-black uppercase tracking-[0.3em]">Brandflare Group Kenya</p>
+               <A href="/" class="flex items-center gap-2">
+                  <img
+                    src="/logos/black.png"
+                    alt="Brandflare Logo"
+                    class="h-12 w-auto object-contain"
+                  />
+                </A>
             </div>
             <div class="flex gap-8 items-center">
-              {Instagram({ size: 18, class: "text-slate-400 hover:text-slate-950 cursor-pointer" })}
-              <p class="text-slate-400 text-[10px] font-black uppercase tracking-widest">© 2025 All Rights Reserved</p>
+              <Instagram size={18} class="text-slate-400 hover:text-slate-950 cursor-pointer" />
+              <p class="text-slate-700 text-[10px] font-black uppercase tracking-widest">© {new Date().getFullYear()} All Rights Reserved</p>
             </div>
           </div>
         </div>
