@@ -87,7 +87,7 @@ export default function LandingPage() {
               </div>
               <div>
                 <p class="text-4xl font-black text-slate-900 mb-1">NCA</p>
-                <p class="text-[10px] text-slate-500 font-black uppercase tracking-widest">Registered Contractor</p>
+                <p class="text-[10px] text-slate-500 font-black uppercase tracking-widest">Compliant</p>
               </div>
               <div>
                 <p class="text-4xl font-black text-slate-900 mb-1">24/7</p>

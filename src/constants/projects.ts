@@ -10,14 +10,14 @@ export const PROJECTS: Project[] = [
   {
     id: 1,
     title: "Contemporary Multi-Unit Complex",
-    location: "Karen, Nairobi",
+    location: "Oaklands, Ruiru",
     category: "Construction",
     img: "/portfolio/house-2.png"
   },
   {
     id: 2,
     title: "Bulk head Gypsum",
-    location: "Runda, Nairobi",
+    location: "Kiamumbi, Kiambu",
     category: "Gypsum",
     img: "/portfolio/minimalist-gypsum.png"
   },
@@ -31,7 +31,7 @@ export const PROJECTS: Project[] = [
   {
     id: 4,
     title: "Luxury Marble Feature Wall & Fireplace",
-    location: "Muthaiga, Nairobi",
+    location: "Kiamumbi, Kiambu",
     category: "Interior Design",
     img: "/portfolio/fireplace-marble.jpeg"
   },
@@ -45,14 +45,14 @@ export const PROJECTS: Project[] = [
   {
     id: 6,
     title: "Executive Apartments",
-    location: "Ruiru, Kiambu",
+    location: "Ukunda, Kwale",
     category: "Finishing",
     img: "/portfolio/executive-apartments.jpeg"
   },
   {
     id: 7,
     title: "Modern 5-Bedroom Residence",
-    location: "Karen, Nairobi",
+    location: "Karatina, Nyeri",
     category: "Construction",
     img: "/portfolio/house-1.png"
   }
